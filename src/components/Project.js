@@ -50,54 +50,53 @@ class Project extends Component {
     super(props)
     this.state = {
         like: false,
-        moviesNameList: [],
+        projectsNameList: [],
       }
     }
 
+       
+
+    handleClick = () => {
+
+      // dans mon reducer
+      this.props.onFavoriteClick();
+
+
+      // envoie vers bdd
+      var isLike = !this.state.like;
+      this.setState({
+         like: isLike
+       });
+      if (isLike) {
+          fetch('http://localhost:3000/myprojects', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: `name=${this.props.name}&desc=${this.props.desc}&poster_path=${this.props.pic_url}&}`
+        })
+        .then(response => {
+          return response.json();
+        })
+        .then(data => {
+          console.log("reponse de mon fetch vers bdd", data);
+
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+      } else {
+        fetch(`http://localhost:3000/myprojects/${this.props.name}`, {
+          method: 'DELETE'})
+          .catch((error) => {
+          console.error(error);
+        });
+      }
+    }
     
-  handleClickLikeOff() {
-  
-    console.log("I want to see all the films available")
 
-    this.setState({
-      viewOnlyLike: false
-    })
-  }
-
-  handleClick(isLike, name) {
-    // 1) First of all, we want to realize a copy of our state because it is an Array and we do not want to create a simple reference (for arrays and objects) but a real copy.
-    var moviesNameListCopy = [...this.state.moviesNameList];
-
-    // 2) If the movie is liked :
-    if (isLike) {
-      // 2.1) We want to push this specific movie and increment this.state.moviesCout
-      moviesNameListCopy.push(name);
-      this.setState({
-        moviesCount: this.state.moviesCount+1,
-        moviesNameList: moviesNameListCopy,
-      })
-    }
-    // 3) If the movie is disliked :
-    else {
-      // 3.1) We want to target this specific movie, and then splice it
-      var index = moviesNameListCopy.indexOf(name)
-      moviesNameListCopy.splice(index, 1);
-      this.setState({
-        moviesCount: this.state.moviesCount-1,
-        moviesNameList: moviesNameListCopy,
-      })
-    }
-  }
   
-  
-  handleClickFavorite = () => {
-    console.log('Click add favorite détecté------------------>', this.state.like)
-    var isLike = !this.state.like;
-    this.setState({
-      like: isLike
-    });
-    this.props.handleClickParent(isLike, this.props.name);
- }
+
 
   render() {
     return (
@@ -128,7 +127,10 @@ class Project extends Component {
              
               {/* <CardText style={style.cardText}>{this.props.desc}</CardText> */}
               
-              <Button onClick={this.props.onFavoriteClick} outline color="secondary"> 
+              <Button 
+              onClick={this.handleClick}
+              // onClick={this.props.onFavoriteClick} outline color="secondary"
+              > 
                 + Favorite
               </Button>
             </CardBody>
